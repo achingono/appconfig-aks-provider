@@ -1,0 +1,106 @@
+{{- if and .Values.provider.certificateTrust.enabled .Values.emulator.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-provider-cert-script
+  namespace: azappconfig-system
+  labels:
+    app.kubernetes.io/component: certificate-trust
+data:
+  trust-cert.sh: |
+    #!/bin/sh
+    set -e
+    echo "Starting certificate trust configuration for non-root container..."
+    
+    # Create directory structure in shared volume (no root needed)
+    mkdir -p /shared-certs/certs
+    
+    # Copy existing system certificates if available (from read-only system)
+    if [ -d "/etc/ssl/certs" ]; then
+        echo "Copying existing system certificates..."
+        cp -r /etc/ssl/certs/* /shared-certs/ 2>/dev/null || true
+    fi
+    
+    # Add our custom certificate to the CA bundle
+    if [ -f /mounted-certs/tls.crt ]; then
+        echo "Found certificate at /mounted-certs/tls.crt"
+        
+        # Copy certificate as individual file
+        cp /mounted-certs/tls.crt /shared-certs/certs/demo-tls.crt
+        echo "Certificate copied to /shared-certs/certs/demo-tls.crt"
+        
+        # Append to CA bundle if it exists, create if it doesn't
+        if [ -f /shared-certs/ca-certificates.crt ]; then
+            cat /mounted-certs/tls.crt >> /shared-certs/ca-certificates.crt
+        else
+            cp /mounted-certs/tls.crt /shared-certs/ca-certificates.crt
+        fi
+        echo "Certificate added to CA bundle"
+        
+        # Also add to ca-bundle.crt for compatibility
+        if [ -f /shared-certs/ca-bundle.crt ]; then
+            cat /mounted-certs/tls.crt >> /shared-certs/ca-bundle.crt
+        else
+            cp /mounted-certs/tls.crt /shared-certs/ca-bundle.crt
+        fi
+        
+        echo "Successfully configured certificate trust for non-root container"
+    else
+        echo "Certificate not found at /mounted-certs/tls.crt"
+        echo "Available files in /mounted-certs:"
+        ls -la /mounted-certs/ || echo "Directory not accessible"
+        exit 1
+    fi
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-provider-patch
+  namespace: azappconfig-system
+  labels:
+    app.kubernetes.io/component: certificate-trust
+data:
+  patch.yaml: |
+    spec:
+      template:
+        spec:
+          {{- if .Values.provider.hostAliases.enabled }}
+          hostAliases:
+          - ip: "{{ .Values.provider.hostAliases.ip }}"
+            hostnames:
+            - "{{ .Values.ingress.domains.config }}.{{ .Values.ingress.domains.base }}"
+          {{- end }}
+          initContainers:
+          - name: trust-certificates
+            image: {{ .Values.emulators.busybox.image }}:{{ .Values.emulators.busybox.tag }}
+            command: ["/bin/sh", "/scripts/trust-cert.sh"]
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+            volumeMounts:
+            - name: demo-tls-cert
+              mountPath: /mounted-certs
+            - name: cert-script
+              mountPath: /scripts
+            - name: shared-ca-certs
+              mountPath: /shared-certs
+          containers:
+          - name: manager
+            volumeMounts:
+            - name: shared-ca-certs
+              mountPath: /etc/ssl/certs
+          volumes:
+          - name: demo-tls-cert
+            configMap:
+              name: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
+          - name: cert-script
+            configMap:
+              name: {{ .Chart.Name }}-provider-cert-script
+              defaultMode: 0755
+          - name: shared-ca-certs
+            emptyDir: {}
+{{- end }}
