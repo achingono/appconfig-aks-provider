@@ -1,0 +1,30 @@
+{{- if .Values.provider.enabled }}
+apiVersion: azconfig.io/v1
+kind: AzureAppConfigurationProvider
+metadata:
+  name: app-config-provider
+spec:
+  connectionStringReference: app-config-connection
+  target:
+    configMapName: {{ .Values.configMap.name }}
+    configMapData: {{ .Values.configMap.data }}
+  configuration:
+    selectors:
+{{- range .Values.provider.selectors }}
+      - keyFilter: {{ .keyFilter | default "*" | quote }}
+        labelFilter: {{ .labelFilter | default "*" | quote }}
+{{- end }}
+    refresh:
+      enabled: true
+      interval: {{ .Values.provider.refreshInterval | default "30s" | quote }}
+{{- end }}
+  featureFlag:
+    selectors:
+{{- range .Values.provider.selectors }}
+      - keyFilter: {{ .keyFilter | default "*" | quote }}
+        labelFilter: {{ .labelFilter | default "*" | quote }}
+{{- end }}
+    refresh:
+      enabled: true
+      interval: {{ .Values.provider.refreshInterval | default "30s" | quote }}
+{{- end }}
