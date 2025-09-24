@@ -1,0 +1,57 @@
+ingress:
+  enabled: true 
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+    nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  controllerIP: ""
+  domain: "demo.local"
+  hosts:
+    - host: config
+      paths:
+        - path: /
+          pathType: Prefix
+          service: config
+  tls:
+    secretName: demo-tls  
+provider:
+  enabled: true
+  certificateTrust:
+    enabled: true
+  hostAliases:
+    enabled: true
+    ip: ""
+  refreshInterval: "30s"
+  selectors:
+    - keyFilter: "*"
+      labelFilter: "demo"
+emulator:
+  enabled: true
+  image:
+    repository: mcr.microsoft.com/azure-app-configuration/app-configuration-emulator
+    tag: 1.0.0-preview
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+    requests:
+      memory: "256Mi"
+      cpu: "125m"
+  host: "config"
+  port: 8483
+  accessKey:
+    id: "emulator"
+    name: "emulator"
+    secret: "emulator"
+configMap:
+  name: app-config
+  data:
+    key: settings.json
+    type: json
+    separator: __  
