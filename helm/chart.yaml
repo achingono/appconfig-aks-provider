@@ -1,0 +1,4 @@
+apiVersion: v2
+name: demo
+version: 0.1.0
+description: A Helm chart for demoing App Configuration AKS Provider inside a minikube cluster
