@@ -1,0 +1,74 @@
+{{- if .Values.emulator.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-emulator
+  labels:
+    app: {{ .Chart.Name }}-emulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-emulator
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-emulator
+    spec:
+      containers:
+        - name: appconfig-emulator
+          image: "{{ .Values.emulator.image.repository }}:{{ .Values.emulator.image.tag }}"
+          imagePullPolicy: {{ .Values.emulator.image.pullPolicy | default "IfNotPresent" }}
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            - name: TENANT__ANONYMOUSAUTHENABLED
+              value: "true"
+            - name: TENANT__HMACSHA256ENABLED
+              value: "true"
+            - name: TENANT__ACCESSKEYS__0__ID
+              value: {{ .Values.emulator.accessKey.id | default "emulator" | quote }}
+            - name: TENANT__ACCESSKEYS__0__NAME
+              value: {{ .Values.emulator.accessKey.name | default "emulator" | quote }}
+            - name: TENANT__ACCESSKEYS__0__SECRET
+              value: {{ .Values.emulator.accessKey.secret | default "emulator" | quote }}
+            - name: AUTHENTICATION__ANONYMOUS__ANONYMOUSUSERROLE
+              value: "Owner"
+          volumeMounts:
+            - name: appconfig-data
+              mountPath: /app/.aace
+          ports:
+            - containerPort: {{ .Values.emulator.port | default 8483 }}
+              name: http
+          resources:
+            requests:
+              memory: "{{ .Values.emulator.resources.requests.memory }}"
+              cpu: "{{ .Values.emulator.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.emulator.resources.limits.memory }}"
+              cpu: "{{ .Values.emulator.resources.limits.cpu }}"
+          startupProbe:
+            tcpSocket:
+              port: {{ .Values.emulator.port | default 8483 }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.emulator.port | default 8483 }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.emulator.port | default 8483 }}
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: appconfig-data
+          emptyDir: {}
+{{- end }}

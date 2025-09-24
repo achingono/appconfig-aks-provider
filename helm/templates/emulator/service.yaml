@@ -1,0 +1,17 @@
+{{- if .Values.emulator.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.emulator.host | default config }}
+  labels:
+    app: {{ .Chart.Name }}-emulator
+spec:
+  ports:
+    - port: 80
+      targetPort: {{ .Values.emulator.port | default 8483 }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Chart.Name }}-emulator
+  type: ClusterIP
+{{- end }}
