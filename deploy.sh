@@ -64,8 +64,11 @@ LOCAL_DOMAIN="${LOCAL_DOMAIN:-demo.local}"
 # ensure minikube is running
 ensure_minikube_running
 
-# Generate local development certificates
-generate_local_certificates
+if [[  ! -f "tls.crt" || ! -f "tls.key" ]]; then
+    echo "No existing TLS certificates found. Generating new self-signed certificates..."
+    # Generate local development certificates
+    generate_local_certificates
+fi
 
 if [[ "$SKIP_PROVIDER" == false ]]; then
     # Install Azure App Configuration provider

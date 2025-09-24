@@ -17,13 +17,13 @@ spec:
   tls:
     - hosts:
     {{- range .Values.ingress.hosts }}
-      - {{ .host }}
+      - {{ .host }}.{{ $.Values.ingress.domain }}
     {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
-      - host: {{ .host }}
+      - host: {{ .host }}.{{ $.Values.ingress.domain }}
         http:
           paths:
           {{- range .paths }}

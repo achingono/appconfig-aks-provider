@@ -95,8 +95,8 @@ data:
               mountPath: /etc/ssl/certs
           volumes:
           - name: demo-tls-cert
-            configMap:
-              name: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
+            secret:
+              secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
           - name: cert-script
             configMap:
               name: {{ .Chart.Name }}-provider-cert-script

@@ -44,7 +44,7 @@ EOF
     openssl x509 -req -in tls.csr -signkey tls.key \
         -out tls.crt -days 365 -extensions v3_req -extfile tls.conf
 
-    rm -f tls.csr tls.conf
+    rm -f tls.csr
     
     # Encode cert and key in base64 for Helm values
     crt=$(cat tls.crt | base64 | tr -d '\n')
