@@ -20,7 +20,7 @@ spec:
       serviceAccountName: {{ .Chart.Name }}-post-install
       containers:
       - name: configure-provider
-        image: {{ .Values.emulators.kubectl.image }}:{{ .Values.emulators.kubectl.tag }}
+        image: bitnami/kubectl:latest
         command:
         - /bin/bash
         - -c

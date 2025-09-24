@@ -1,0 +1,29 @@
+{{- if .Values.certificates.selfSigned.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: tls
+data:
+  {{- if .Values.certificates.data.crt }}
+  tls.crt: |
+{{ .Values.certificates.data.crt | b64dec | nindent 4 }}
+  {{- else }}
+  tls.crt: ""
+  {{- end }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-cert-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: tls
+data:
+  tls.conf: |
+{{ .Values.certificates.data.conf | b64dec | nindent 4 }}
+{{- end }}

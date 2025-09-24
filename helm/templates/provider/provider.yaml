@@ -7,7 +7,10 @@ spec:
   connectionStringReference: app-config-connection
   target:
     configMapName: {{ .Values.configMap.name }}
-    configMapData: {{ .Values.configMap.data }}
+    configMapData:
+      key: {{ .Values.configMap.data.key | quote }}
+      type: {{ .Values.configMap.data.type | default "json" | quote }}
+      separator: {{ .Values.configMap.data.separator | default "__" | quote }}
   configuration:
     selectors:
 {{- range .Values.provider.selectors }}
@@ -17,7 +20,6 @@ spec:
     refresh:
       enabled: true
       interval: {{ .Values.provider.refreshInterval | default "30s" | quote }}
-{{- end }}
   featureFlag:
     selectors:
 {{- range .Values.provider.selectors }}

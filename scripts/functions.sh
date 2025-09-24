@@ -125,6 +125,8 @@ create_minikube_overrides() {
     # Handle TLS certificate for ingress
     local crt=""
     local key=""
+    local conf=""
+
     if [[ -f "tls.crt" && -f "tls.key" ]]; then
         crt=$(cat tls.crt | base64 | tr -d '\n')
         key=$(cat tls.key | base64 | tr -d '\n')
@@ -132,6 +134,33 @@ create_minikube_overrides() {
         generate_local_certificates
         crt=$(cat tls.crt | base64 | tr -d '\n')
         key=$(cat tls.key | base64 | tr -d '\n')
+    fi
+
+    if [[ -f "tls.conf" ]]; then
+        conf=$(cat tls.conf | base64 | tr -d '\n')
+    else
+        raw=$(cat <<EOF
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+CN = *.${LOCAL_DOMAIN}
+O = LocalDev
+
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = *.${LOCAL_DOMAIN}
+DNS.2 = ${LOCAL_DOMAIN}
+IP.1 = 127.0.0.1
+EOF
+        )
+        conf=$(echo "$raw" | base64 | tr -d '\n')
     fi
 
     # Get ingress IP
@@ -152,14 +181,25 @@ create_minikube_overrides() {
     # Create minikube-specific overrides
     cat <<EOF > overrides.yaml
 ingress:
-enabled: "$([[ "${SKIP_INGRESS:-false}" == "false" ]] && echo "true" || echo "false")"
+  enabled: "$([[ "${SKIP_INGRESS:-false}" == "false" ]] && echo "true" || echo "false")"
   controllerIP: "$INGRESS_IP"
   domain: "$LOCAL_DOMAIN"
 provider:
   enabled: "$([[ "${SKIP_PROVIDER:-false}" == "false" ]] && echo "true" || echo "false")"
 emulator:
   enabled: "$([[ "${SKIP_EMULATOR:-false}" == "false" ]] && echo "true" || echo "false")"
-
+certificates:
+  selfSigned:
+    enabled: true
+    commonName: "*.${LOCAL_DOMAIN}"
+    subjectAltNames:
+      - "*.${LOCAL_DOMAIN}"
+      - "${LOCAL_DOMAIN}"
+      - "127.0.0.1"
+  data:
+    crt: "$crt"
+    key: "$key"
+    conf: "$conf"
 EOF
 
     echo "✓ Created overrides.yaml with environment-specific overrides"

@@ -66,15 +66,15 @@ data:
     spec:
       template:
         spec:
-          {{- if .Values.provider.hostAliases.enabled }}
+          {{- if .Values.emulator.enabled }}
           hostAliases:
-          - ip: "{{ .Values.provider.hostAliases.ip }}"
+          - ip: "{{ .Values.ingress.controllerIP }}"
             hostnames:
-            - "{{ .Values.ingress.domains.config }}.{{ .Values.ingress.domains.base }}"
+            - "{{ .Values.emulator.host }}.{{ .Values.ingress.domain }}"
           {{- end }}
           initContainers:
           - name: trust-certificates
-            image: {{ .Values.emulators.busybox.image }}:{{ .Values.emulators.busybox.tag }}
+            image: busybox:latest
             command: ["/bin/sh", "/scripts/trust-cert.sh"]
             securityContext:
               runAsNonRoot: true
