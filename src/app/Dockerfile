@@ -25,8 +25,9 @@ COPY src ./src/
 # Build the Next.js app
 RUN npm run build
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 8080
+EXPOSE 8080
+ENV PORT=8080
 
 # Start the Next.js server
 CMD ["npm", "start"]

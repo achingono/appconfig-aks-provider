@@ -2,7 +2,7 @@
   "Settings": {
     "ColorScheme": "Green",
     "PageSize": {
-        "Default": 10,
+        "Default": 12,
         "Max": 200
     }
   },
