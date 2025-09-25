@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     develop:
       watch:
-        - path: src/config
+        - path: src/cfg
           action: rebuild          
     ports:
       - "5100:8080"
@@ -16,6 +16,27 @@ services:
       - CONFIG_PATH=/app/settings.json
       - BOOKS_DATA_PATH=/app/data/books_data.csv
       - BOOKS_RATING_PATH=/app/data/books_rating.csv
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
     volumes:
       - ./src/cfg/settings.json:/app/settings.json:ro
       - ./src/api/data:/app/data:ro
+
+  app:
+    build:
+      context: src/app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:5100
+    depends_on:
+      - api
+    develop:
+      watch:
+        - path: src/cfg
+          action: rebuild
+        - path: src/app/src
+          action: rebuild
+    volumes:
+      - ./src/cfg/settings.json:/app/settings.json:ro
