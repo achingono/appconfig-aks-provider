@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/apiService';
 
-const RatingsPage = ({ bookFilter }) => {
+const RatingsPage = ({ bookFilter, currentColors }) => {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

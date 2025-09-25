@@ -1,6 +1,6 @@
 import React from 'react';
 
-const BookCard = ({ book, onViewRatings }) => {
+const BookCard = ({ book, onViewRatings, currentColors }) => {
   const {
     id,
     title = 'No Title',
@@ -63,7 +63,10 @@ const BookCard = ({ book, onViewRatings }) => {
           {preview_link && (
             <button 
               onClick={handlePreview}
-              className="btn-primary text-xs"
+              className="text-xs px-3 py-1 rounded font-medium transition-colors text-white"
+              style={{ backgroundColor: currentColors?.primary || '#3498db' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = currentColors?.primaryHover || '#2980b9'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = currentColors?.primary || '#3498db'}
             >
               Preview Book
             </button>
@@ -72,7 +75,10 @@ const BookCard = ({ book, onViewRatings }) => {
           {onViewRatings && id !== undefined && (
             <button 
               onClick={handleViewRatings}
-              className="btn-secondary text-xs"
+              className="text-xs px-3 py-1 rounded font-medium transition-colors text-white"
+              style={{ backgroundColor: currentColors?.primary || '#3498db' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = currentColors?.primaryHover || '#2980b9'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = currentColors?.primary || '#3498db'}
             >
               View Ratings
             </button>

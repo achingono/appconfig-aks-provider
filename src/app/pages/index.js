@@ -31,9 +31,35 @@ const HomePage = ({ initialConfig }) => {
     setCurrentPage('ratings');
   };
 
+  // Determine theme classes and colors
+  const isDarkMode = appConfig.features?.enableDarkMode;
+  const colorScheme = appConfig.ui?.theme || 'blue';
+  const themeClasses = `${isDarkMode ? 'dark' : ''}`.trim();
+
+  // Define color schemes with inline styles
+  const colors = {
+    blue: {
+      primary: '#3498db',
+      secondary: '#2c3e50',
+      primaryHover: '#2980b9',
+      secondaryHover: '#34495e',
+    },
+    green: {
+      primary: '#27ae60',
+      secondary: '#1e3a2e',
+      primaryHover: '#219a52',
+      secondaryHover: '#2c5530',
+    }
+  };
+
+  const currentColors = colors[colorScheme] || colors.blue;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-secondary text-white p-5 mb-5">
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors ${themeClasses}`}>
+      <header 
+        className="text-white p-5 mb-5 transition-colors"
+        style={{ backgroundColor: currentColors.secondary }}
+      >
         <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-5">
           <div>
             <h1 className="text-3xl font-bold mb-2">
@@ -47,7 +73,10 @@ const HomePage = ({ initialConfig }) => {
           <div className="flex items-center gap-4">
             <button
               onClick={refreshConfiguration}
-              className="btn btn-primary text-xs"
+              className="px-3 py-2 rounded transition-colors text-xs font-medium"
+              style={{ backgroundColor: currentColors.primary }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.primaryHover}
+              onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.primary}
             >
               Refresh Config
             </button>
@@ -58,28 +87,53 @@ const HomePage = ({ initialConfig }) => {
             <div className="text-xs bg-white bg-opacity-10 px-3 py-2 rounded">
               API: {appConfig.api?.baseUrl || 'Default'}
             </div>
+            {isDarkMode && (
+              <div className="text-xs bg-white bg-opacity-10 px-3 py-2 rounded">
+                🌙 Dark Mode
+              </div>
+            )}
           </div>
         </div>
 
         <nav className="max-w-7xl mx-auto mt-5 flex gap-2">
           <button
             onClick={() => setCurrentPage('books')}
-            className={`px-5 py-2 rounded border border-primary transition-colors ${
-              currentPage === 'books' 
-                ? 'bg-primary text-white' 
-                : 'bg-transparent text-white hover:bg-primary'
-            }`}
+            className="px-5 py-2 rounded transition-colors text-white font-medium"
+            style={{
+              backgroundColor: currentPage === 'books' ? currentColors.primary : 'transparent',
+              border: `1px solid ${currentColors.primary}`,
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== 'books') {
+                e.target.style.backgroundColor = currentColors.primary;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== 'books') {
+                e.target.style.backgroundColor = 'transparent';
+              }
+            }}
           >
             Books
           </button>
           {appConfig.features?.enableRatings && (
             <button
               onClick={handleNavigateToRatings}
-              className={`px-5 py-2 rounded border border-primary transition-colors ${
-                currentPage === 'ratings' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-transparent text-white hover:bg-primary'
-              }`}
+              className="px-5 py-2 rounded transition-colors text-white font-medium"
+              style={{
+                backgroundColor: currentPage === 'ratings' ? currentColors.primary : 'transparent',
+                border: `1px solid ${currentColors.primary}`,
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== 'ratings') {
+                  e.target.style.backgroundColor = currentColors.primary;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentPage !== 'ratings') {
+                  e.target.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Ratings
             </button>
@@ -87,17 +141,25 @@ const HomePage = ({ initialConfig }) => {
         </nav>
       </header>
 
-      <main className="max-w-7xl mx-auto px-5">
-        {currentPage === 'books' ? (
-          <BooksPage appConfig={appConfig} onViewRatings={handleViewRatings} />
-        ) : currentPage === 'ratings' ? (
-          <RatingsPage appConfig={appConfig} bookFilter={ratingsBookFilter} />
-        ) : (
-          <div className="text-center py-10">Page not found</div>
+      <main className="max-w-7xl mx-auto px-5 pb-10">
+        {currentPage === 'books' && (
+          <BooksPage 
+            onViewRatings={handleViewRatings} 
+            currentColors={currentColors}
+          />
+        )}
+        {currentPage === 'ratings' && (
+          <RatingsPage 
+            bookFilter={ratingsBookFilter} 
+            currentColors={currentColors}
+          />
         )}
       </main>
 
-      <footer className="bg-dark text-white text-center p-5 mt-10">
+      <footer 
+        className="text-white text-center p-5 mt-10 transition-colors"
+        style={{ backgroundColor: currentColors.secondary }}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-sm mb-2">
             Configuration Status: {appConfig.settings ? 'Loaded from mounted settings.json' : 'Using Defaults'}

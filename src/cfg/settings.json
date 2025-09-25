@@ -1,6 +1,6 @@
 {
   "Settings": {
-    "ColorScheme": "Green",
+    "ColorScheme": "Blue",
     "PageSize": {
         "Default": 12,
         "Max": 200
@@ -11,7 +11,7 @@
       {
         "id": "DarkMode",
         "description": "",
-        "enabled": "true",
+        "enabled": "false",
         "conditions": {
           "client_filters": []
         }

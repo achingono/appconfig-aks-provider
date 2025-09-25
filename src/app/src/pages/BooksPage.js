@@ -5,7 +5,7 @@ import BookCard from '../components/BookCard';
 import Pagination from '../components/Pagination';
 import SearchControls from '../components/SearchControls';
 
-const BooksPage = ({ appConfig, onViewRatings }) => {
+const BooksPage = ({ appConfig, onViewRatings, currentColors }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -125,6 +125,7 @@ const BooksPage = ({ appConfig, onViewRatings }) => {
                 key={`${book.title}-${index}`} 
                 book={book} 
                 onViewRatings={onViewRatings}
+                currentColors={currentColors}
               />
             ))}
           </div>
