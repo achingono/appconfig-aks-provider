@@ -1,0 +1,29 @@
+{
+  "Settings": {
+    "ColorScheme": "Green",
+    "PageSize": {
+        "Default": 10,
+        "Max": 200
+    }
+  },
+  "feature_management": {
+    "feature_flags": [
+      {
+        "id": "DarkMode",
+        "description": "",
+        "enabled": "true",
+        "conditions": {
+          "client_filters": []
+        }
+      },
+      {
+        "id": "Ratings",
+        "description": "",
+        "enabled": "true",
+        "conditions": {
+          "client_filters": []
+        }
+      }    
+    ]
+  }
+}
