@@ -17,6 +17,16 @@ ingress:
         - path: /
           pathType: Prefix
           service: config
+    - host: api
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api
+    - host: app
+      paths:
+        - path: /
+          pathType: Prefix
+          service: app
   tls:
     enabled: true
     secretName: demo-tls  
@@ -31,7 +41,7 @@ provider:
   refreshInterval: "30s"
   selectors:
     - keyFilter: "*"
-      labelFilter: "demo"
+      labelFilter: "*"
 emulator:
   enabled: true
   image:
@@ -57,3 +67,29 @@ configMap:
     key: settings.json
     type: json
     separator: __  
+api:
+  image:
+    repository: api
+    tag: latest
+    pullPolicy: IfNotPresent
+  host: "api"
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+    requests:
+      memory: "256Mi"
+      cpu: "125m"
+app:
+  image:
+    repository: app
+    tag: latest
+    pullPolicy: IfNotPresent
+  host: "app"
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
+    requests:
+      memory: "256Mi"
+      cpu: "125m"

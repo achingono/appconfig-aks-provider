@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-app
+  annotations:
+    reloader.stakater.com/auto: "true"
+    reloader.stakater.com/rollout-strategy: "restart"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-app
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-app
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: PORT
+              value: "8080"
+            - name: NEXT_PUBLIC_API_BASE_URL
+              value: "https://{{ .Values.api.host }}.{{ .Values.ingress.domain }}"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/settings.json
+              subPath: settings.json
+              readOnly: true
+          resources:
+            requests:
+              memory: "{{ .Values.app.resources.requests.memory }}"
+              cpu: "{{ .Values.app.resources.requests.cpu }}"
+            limits:
+              memory: "{{ .Values.app.resources.limits.memory }}"
+              cpu: "{{ .Values.app.resources.limits.cpu }}"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Values.configMap.name }}

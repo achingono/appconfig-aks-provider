@@ -27,9 +27,9 @@ data:
         echo "Found certificate at /mounted-certs/tls.crt"
         
         # Copy certificate as individual file
-        cp /mounted-certs/tls.crt /shared-certs/certs/demo-tls.crt
-        echo "Certificate copied to /shared-certs/certs/demo-tls.crt"
-        
+        cp /mounted-certs/tls.crt /shared-certs/certs/{{ .Values.ingress.domain }}.crt
+        echo "Certificate copied to /shared-certs/certs/{{ .Values.ingress.domain }}.crt"
+
         # Append to CA bundle if it exists, create if it doesn't
         if [ -f /shared-certs/ca-certificates.crt ]; then
             cat /mounted-certs/tls.crt >> /shared-certs/ca-certificates.crt
@@ -82,7 +82,7 @@ data:
               runAsGroup: 65532
               allowPrivilegeEscalation: false
             volumeMounts:
-            - name: demo-tls-cert
+            - name: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}-cert
               mountPath: /mounted-certs
             - name: cert-script
               mountPath: /scripts
@@ -94,7 +94,7 @@ data:
             - name: shared-ca-certs
               mountPath: /etc/ssl/certs
           volumes:
-          - name: demo-tls-cert
+          - name: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}-cert
             secret:
               secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (.Chart.Name)) }}
           - name: cert-script
