@@ -269,14 +269,14 @@ curl -k https://config.demo.local
 
 To connect to a real Azure App Configuration instance instead of the emulator:
 
-1. Deploy without the emulator:
-   ```bash
-   ./deploy.sh --skip-emulator
-   ```
-
-2. Create a `.env` file with your connection string:
+1. Create a `.env` file with your connection string:
    ```env
    PROVIDER_CONNECTION_STRING="Endpoint=https://your-appconfig.azconfig.io;Id=your-id;Secret=your-secret"
+   ```
+
+2. Deploy without the emulator:
+   ```bash
+   ./deploy.sh --skip-emulator
    ```
 
 ### Custom Configuration Data

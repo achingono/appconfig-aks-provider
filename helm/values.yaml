@@ -22,6 +22,7 @@ ingress:
     secretName: demo-tls  
 provider:
   enabled: true
+  connectionString: ""
   certificateTrust:
     enabled: true
   hostAliases:

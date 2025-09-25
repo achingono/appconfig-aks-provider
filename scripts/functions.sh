@@ -186,6 +186,7 @@ ingress:
   domain: "$LOCAL_DOMAIN"
 provider:
   enabled: "$([[ "${SKIP_PROVIDER:-false}" == "false" ]] && echo "true" || echo "false")"
+  connectionString: "${PROVIDER_CONNECTION_STRING:-}"
 emulator:
   enabled: "$([[ "${SKIP_EMULATOR:-false}" == "false" ]] && echo "true" || echo "false")"
 certificates:
