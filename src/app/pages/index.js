@@ -6,6 +6,7 @@ import ServerConfigService from '../lib/serverConfigService';
 const HomePage = ({ initialConfig }) => {
   const [appConfig, setAppConfig] = useState(initialConfig);
   const [currentPage, setCurrentPage] = useState('books');
+  const [ratingsBookFilter, setRatingsBookFilter] = useState(null);
 
   const refreshConfiguration = async () => {
     try {
@@ -18,6 +19,16 @@ const HomePage = ({ initialConfig }) => {
     } catch (error) {
       console.error('Failed to refresh configuration:', error);
     }
+  };
+
+  const handleViewRatings = (bookId, bookTitle) => {
+    setRatingsBookFilter({ bookId, bookTitle });
+    setCurrentPage('ratings');
+  };
+
+  const handleNavigateToRatings = () => {
+    setRatingsBookFilter(null); // Clear any book filter
+    setCurrentPage('ratings');
   };
 
   return (
@@ -63,7 +74,7 @@ const HomePage = ({ initialConfig }) => {
           </button>
           {appConfig.features?.enableRatings && (
             <button
-              onClick={() => setCurrentPage('ratings')}
+              onClick={handleNavigateToRatings}
               className={`px-5 py-2 rounded border border-primary transition-colors ${
                 currentPage === 'ratings' 
                   ? 'bg-primary text-white' 
@@ -78,9 +89,9 @@ const HomePage = ({ initialConfig }) => {
 
       <main className="max-w-7xl mx-auto px-5">
         {currentPage === 'books' ? (
-          <BooksPage appConfig={appConfig} />
+          <BooksPage appConfig={appConfig} onViewRatings={handleViewRatings} />
         ) : currentPage === 'ratings' ? (
-          <RatingsPage appConfig={appConfig} />
+          <RatingsPage appConfig={appConfig} bookFilter={ratingsBookFilter} />
         ) : (
           <div className="text-center py-10">Page not found</div>
         )}

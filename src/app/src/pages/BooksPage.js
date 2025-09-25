@@ -5,7 +5,7 @@ import BookCard from '../components/BookCard';
 import Pagination from '../components/Pagination';
 import SearchControls from '../components/SearchControls';
 
-const BooksPage = ({ appConfig }) => {
+const BooksPage = ({ appConfig, onViewRatings }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -121,7 +121,11 @@ const BooksPage = ({ appConfig }) => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {books.map((book, index) => (
-              <BookCard key={`${book.title}-${index}`} book={book} />
+              <BookCard 
+                key={`${book.title}-${index}`} 
+                book={book} 
+                onViewRatings={onViewRatings}
+              />
             ))}
           </div>
 

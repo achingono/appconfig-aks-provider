@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/apiService';
 
-const RatingsPage = () => {
+const RatingsPage = ({ bookFilter }) => {
   const [ratings, setRatings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,6 +21,22 @@ const RatingsPage = () => {
   useEffect(() => {
     loadRatings();
   }, []);
+
+  useEffect(() => {
+    // Handle book filter from props (when navigating from BookCard)
+    if (bookFilter) {
+      setBookIdFilter(bookFilter.bookId.toString());
+      setUserIdFilter('');
+      setMinScore('');
+      setMaxScore('');
+      loadRatings(1, {
+        bookId: bookFilter.bookId.toString(),
+        userId: '',
+        minScore: '',
+        maxScore: ''
+      });
+    }
+  }, [bookFilter]);
 
   const loadRatings = async (page = 1, filters = {}) => {
     setLoading(true);
@@ -91,7 +107,14 @@ const RatingsPage = () => {
   return (
     <div className="page-container space-y-6">
       <div className="search-controls">
-        <h3 className="text-lg font-semibold text-secondary mb-4">Filter Ratings</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-secondary">Filter Ratings</h3>
+          {bookFilter && (
+            <div className="text-sm text-primary bg-blue-50 px-3 py-1 rounded-md">
+              Showing ratings for: <strong>{bookFilter.bookTitle}</strong>
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-3 items-center">
           <input
             type="text"

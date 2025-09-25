@@ -9,6 +9,7 @@ app, api = server.app, server.api
 
 # Book model for API serialization
 book_model = api.model('Book', {
+    'id': fields.String(required=True, description='The book ID'),
     'title': fields.String(required=True, description='The book title'),
     'description': fields.String(description='Book description'),
     'authors': fields.List(fields.String, description='List of authors'),
@@ -44,12 +45,13 @@ class BookService:
             csv_path = os.path.join(current_dir, '..', csv_path)
         self.csv_path = os.path.abspath(csv_path)
         self.df = None
+        self.title_to_id_map = {}
         self.load_data()
     
     def load_data(self):
-        """Load book data from CSV file"""
+        """Load book data from CSV file and create title-to-ID mapping from ratings"""
         try:
-            # Due to large file size, we'll load in chunks
+            # Load books data
             chunk_size = 1000
             chunks = []
             for chunk in pd.read_csv(self.csv_path, chunksize=chunk_size, nrows=10000):  # Limit to first 10k rows
@@ -64,8 +66,20 @@ class BookService:
             self.df['authors'] = self.df['authors'].apply(self._parse_list_string)
             self.df['categories'] = self.df['categories'].apply(self._parse_list_string)
             
-            # Add an index as book ID
-            self.df['id'] = self.df.index
+            # Create title-to-ID mapping from rating service after it's initialized
+            self._create_title_to_id_mapping()
+            
+            # Map titles to IDs from ratings data, fallback to DataFrame index
+            def get_book_id(row):
+                title = row['Title']
+                if title in self.title_to_id_map:
+                    return self.title_to_id_map[title]
+                else:
+                    # Fallback: use a high ID based on DataFrame index to avoid conflicts
+                    return 9999999 + row.name
+            
+            self.df['id'] = self.df.apply(get_book_id, axis=1)
+            print(f"Loaded {len(self.df)} books with ID mapping")
             
         except Exception as e:
             print(f"Error loading book data: {e}")
@@ -74,6 +88,22 @@ class BookService:
                 'Title', 'description', 'authors', 'image', 'previewLink',
                 'publisher', 'publishedDate', 'infoLink', 'categories', 'ratingsCount', 'id'
             ])
+    
+    def _create_title_to_id_mapping(self):
+        """Create title-to-ID mapping using rating service data"""
+        try:
+            # Import here to avoid circular import
+            from models.rating import rating_service
+            
+            # Get unique title-ID pairs from rating service
+            rating_df = rating_service.df
+            if rating_df is not None and not rating_df.empty:
+                unique_pairs = rating_df[['Id', 'Title']].drop_duplicates(subset=['Title'])
+                self.title_to_id_map = dict(zip(unique_pairs['Title'], unique_pairs['Id']))
+                print(f"Created title-to-ID mapping for {len(self.title_to_id_map)} titles from rating service")
+        except Exception as e:
+            print(f"Error creating title-to-ID mapping: {e}")
+            self.title_to_id_map = {}
     
     def _parse_list_string(self, list_str):
         """Parse string representation of list into actual list"""
@@ -139,11 +169,13 @@ class BookService:
     def get_book_by_id(self, book_id):
         """Get a specific book by ID"""
         try:
-            book_id = int(book_id)
-            if book_id < 0 or book_id >= len(self.df):
+            book_id = str(book_id)  # Convert to string for comparison
+            matching_books = self.df[self.df['id'].astype(str) == book_id]
+            
+            if matching_books.empty:
                 return None
             
-            row = self.df.iloc[book_id]
+            row = matching_books.iloc[0]
             return self._row_to_dict(row)
         except:
             return None
@@ -198,10 +230,14 @@ class BookService:
             authors.update(author_list)
         return sorted([author for author in authors if author])
     
+    def get_title_to_id_mapping(self):
+        """Get the title-to-ID mapping from ratings data"""
+        return self.title_to_id_map.copy()
+    
     def _row_to_dict(self, row):
         """Convert DataFrame row to dictionary"""
         return {
-            'id': int(row['id']),
+            'id': str(row['id']),  # Keep as string to match rating IDs
             'title': row['Title'],
             'description': row['description'],
             'authors': row['authors'],

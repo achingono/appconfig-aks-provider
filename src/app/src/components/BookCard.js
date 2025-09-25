@@ -1,7 +1,8 @@
 import React from 'react';
 
-const BookCard = ({ book }) => {
+const BookCard = ({ book, onViewRatings }) => {
   const {
+    id,
     title = 'No Title',
     description = '',
     authors = [],
@@ -16,6 +17,12 @@ const BookCard = ({ book }) => {
   const handlePreview = () => {
     if (preview_link) {
       window.open(preview_link, '_blank');
+    }
+  };
+
+  const handleViewRatings = () => {
+    if (onViewRatings && id !== undefined) {
+      onViewRatings(id, title);
     }
   };
 
@@ -52,14 +59,25 @@ const BookCard = ({ book }) => {
         {categories.length > 0 && <div>Categories: {categories.join(', ')}</div>}
         {ratings_count && <div>Ratings: {ratings_count}</div>}
         
-        {preview_link && (
-          <button 
-            onClick={handlePreview}
-            className="mt-2 btn btn-primary text-xs"
-          >
-            Preview Book
-          </button>
-        )}
+        <div className="flex gap-2 mt-2">
+          {preview_link && (
+            <button 
+              onClick={handlePreview}
+              className="btn-primary text-xs"
+            >
+              Preview Book
+            </button>
+          )}
+          
+          {onViewRatings && id !== undefined && (
+            <button 
+              onClick={handleViewRatings}
+              className="btn-secondary text-xs"
+            >
+              View Ratings
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
