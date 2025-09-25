@@ -93,7 +93,7 @@ const BooksPage = ({ appConfig }) => {
   };
 
   return (
-    <div className="books-container">
+    <div className="space-y-5">
       <SearchControls
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -108,25 +108,25 @@ const BooksPage = ({ appConfig }) => {
       />
 
       {error && (
-        <div className="error">
+        <div className="bg-danger text-white p-4 rounded-lg text-center">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="loading">
+        <div className="text-center py-10 text-gray-500">
           Loading books...
         </div>
       ) : (
         <>
-          <div className="book-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {books.map((book, index) => (
               <BookCard key={`${book.title}-${index}`} book={book} />
             ))}
           </div>
 
           {books.length === 0 && !loading && (
-            <div className="loading">
+            <div className="text-center py-10 text-gray-500">
               No books found. Try adjusting your search criteria.
             </div>
           )}

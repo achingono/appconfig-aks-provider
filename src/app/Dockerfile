@@ -13,6 +13,10 @@ RUN npm install
 # Copy Next.js configuration
 COPY next.config.js ./
 
+# Copy Tailwind and PostCSS configuration
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+
 # Copy the pages directory (Next.js routing)
 COPY pages ./pages/
 

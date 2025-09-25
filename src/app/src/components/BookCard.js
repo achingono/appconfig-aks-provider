@@ -20,33 +20,33 @@ const BookCard = ({ book }) => {
   };
 
   return (
-    <div className="book-card">
+    <div className="card hover:shadow-lg">
       {image && (
         <img 
           src={image} 
           alt={title}
-          className="book-image"
+          className="w-24 h-36 object-cover rounded mb-4"
           onError={(e) => {
             e.target.style.display = 'none';
           }}
         />
       )}
       
-      <h3 className="book-title">{title}</h3>
+      <h3 className="text-lg font-bold text-secondary mb-2 leading-tight">{title}</h3>
       
       {authors.length > 0 && (
-        <div className="book-authors">
+        <div className="text-gray-500 mb-2">
           by {authors.join(', ')}
         </div>
       )}
       
       {description && (
-        <div className="book-description">
+        <div className="text-sm leading-relaxed text-dark mb-4 line-clamp-3">
           {description}
         </div>
       )}
       
-      <div className="book-meta">
+      <div className="text-xs text-gray-400 border-t border-gray-100 pt-2">
         {publisher && <div>Publisher: {publisher}</div>}
         {published_date && <div>Published: {published_date}</div>}
         {categories.length > 0 && <div>Categories: {categories.join(', ')}</div>}
@@ -55,16 +55,7 @@ const BookCard = ({ book }) => {
         {preview_link && (
           <button 
             onClick={handlePreview}
-            style={{
-              marginTop: '10px',
-              padding: '8px 16px',
-              backgroundColor: '#3498db',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}
+            className="mt-2 btn btn-primary text-xs"
           >
             Preview Book
           </button>

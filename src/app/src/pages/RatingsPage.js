@@ -79,31 +79,33 @@ const RatingsPage = () => {
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     return (
-      <div style={{ color: '#f39c12' }}>
+      <div className="text-yellow-500">
         {'★'.repeat(fullStars)}
         {hasHalfStar && '☆'}
         {'☆'.repeat(emptyStars)}
-        <span style={{ marginLeft: '8px', color: '#333' }}>({score}/5)</span>
+        <span className="ml-2 text-gray-700">({score}/5)</span>
       </div>
     );
   };
 
   return (
-    <div>
-      <div className="controls">
-        <h3>Filter Ratings</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+    <div className="page-container space-y-6">
+      <div className="search-controls">
+        <h3 className="text-lg font-semibold text-secondary mb-4">Filter Ratings</h3>
+        <div className="flex flex-wrap gap-3 items-center">
           <input
             type="text"
             placeholder="Book ID"
             value={bookIdFilter}
             onChange={(e) => setBookIdFilter(e.target.value)}
+            className="input-field"
           />
           <input
             type="text"
             placeholder="User ID"
             value={userIdFilter}
             onChange={(e) => setUserIdFilter(e.target.value)}
+            className="input-field"
           />
           <input
             type="number"
@@ -112,6 +114,7 @@ const RatingsPage = () => {
             max="5"
             value={minScore}
             onChange={(e) => setMinScore(e.target.value)}
+            className="input-field"
           />
           <input
             type="number"
@@ -120,65 +123,61 @@ const RatingsPage = () => {
             max="5"
             value={maxScore}
             onChange={(e) => setMaxScore(e.target.value)}
+            className="input-field"
           />
-          <button onClick={handleFilter}>Filter</button>
-          <button onClick={handleReset}>Reset</button>
+          <button onClick={handleFilter} className="btn-primary">Filter</button>
+          <button onClick={handleReset} className="btn-secondary">Reset</button>
         </div>
       </div>
 
       {error && (
-        <div className="error">
+        <div className="error-message">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="loading">
+        <div className="text-center py-8">
           Loading ratings...
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gap: '20px' }}>
+          <div className="space-y-5">
             {ratings.map((rating, index) => (
-              <div key={`${rating.id}-${index}`} className="book-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '15px' }}>
+              <div key={`${rating.id}-${index}`} className="card">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h4 style={{ margin: '0 0 5px 0', color: '#2c3e50' }}>{rating.title}</h4>
-                    <div style={{ fontSize: '12px', color: '#7f8c8d' }}>
+                    <h4 className="text-lg font-semibold text-secondary mb-1">{rating.title}</h4>
+                    <div className="text-sm text-gray-500">
                       Book ID: {rating.id} | Review Date: {formatDate(rating.time)}
                     </div>
                   </div>
                   {renderStars(rating.score)}
                 </div>
 
-                <div style={{ marginBottom: '10px' }}>
-                  <strong>Reviewer:</strong> {rating.profile_name}
+                <div className="mb-3">
+                  <strong className="font-medium">Reviewer:</strong> {rating.profile_name}
                   {rating.helpfulness && (
-                    <span style={{ marginLeft: '15px', fontSize: '12px', color: '#27ae60' }}>
+                    <span className="ml-4 text-sm text-green-600">
                       Helpful: {rating.helpfulness}
                     </span>
                   )}
                 </div>
 
                 {rating.summary && (
-                  <div style={{ marginBottom: '10px' }}>
-                    <strong>Summary:</strong> {rating.summary}
+                  <div className="mb-3">
+                    <strong className="font-medium">Summary:</strong> {rating.summary}
                   </div>
                 )}
 
                 {rating.text && (
-                  <div style={{ 
-                    backgroundColor: '#f8f9fa', 
-                    padding: '10px', 
-                    borderRadius: '4px',
-                    lineHeight: '1.4'
-                  }}>
+                  <div className="bg-gray-50 p-3 rounded-md leading-relaxed">
                     {rating.text}
                   </div>
                 )}
 
                 {rating.price && (
-                  <div style={{ marginTop: '10px', fontSize: '12px', color: '#7f8c8d' }}>
+                  <div className="mt-3 text-sm text-gray-500">
                     Price at time of review: {rating.price}
                   </div>
                 )}
@@ -187,26 +186,28 @@ const RatingsPage = () => {
           </div>
 
           {ratings.length === 0 && !loading && (
-            <div className="loading">
+            <div className="text-center py-8 text-gray-500">
               No ratings found. Try adjusting your filter criteria.
             </div>
           )}
 
           {pagination.pages > 1 && (
-            <div className="pagination">
+            <div className="pagination flex items-center justify-center space-x-4 mt-8">
               <button 
                 onClick={() => loadRatings(pagination.page - 1)}
                 disabled={pagination.page <= 1}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span>
+              <span className="text-sm text-gray-600">
                 Page {pagination.page} of {pagination.pages} 
                 ({pagination.total} total ratings)
               </span>
               <button 
                 onClick={() => loadRatings(pagination.page + 1)}
                 disabled={pagination.page >= pagination.pages}
+                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>

@@ -43,18 +43,24 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
   if (totalPages <= 1) return null;
 
   return (
-    <div className="pagination">
+    <div className="pagination flex items-center justify-center space-x-2 mt-8">
       <button 
         onClick={handlePrevious} 
         disabled={currentPage === 1}
+        className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Previous
       </button>
       
       {currentPage > 3 && (
         <>
-          <button onClick={() => handlePageClick(1)}>1</button>
-          {currentPage > 4 && <span>...</span>}
+          <button 
+            onClick={() => handlePageClick(1)}
+            className="pagination-btn"
+          >
+            1
+          </button>
+          {currentPage > 4 && <span className="text-gray-500">...</span>}
         </>
       )}
       
@@ -62,10 +68,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
         <button
           key={page}
           onClick={() => handlePageClick(page)}
-          style={{
-            backgroundColor: page === currentPage ? '#3498db' : 'white',
-            color: page === currentPage ? 'white' : '#333'
-          }}
+          className={`pagination-btn ${
+            page === currentPage 
+              ? 'bg-primary text-white' 
+              : 'bg-white text-gray-700 hover:bg-gray-50'
+          }`}
         >
           {page}
         </button>
@@ -73,19 +80,25 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
       
       {currentPage < totalPages - 2 && (
         <>
-          {currentPage < totalPages - 3 && <span>...</span>}
-          <button onClick={() => handlePageClick(totalPages)}>{totalPages}</button>
+          {currentPage < totalPages - 3 && <span className="text-gray-500">...</span>}
+          <button 
+            onClick={() => handlePageClick(totalPages)}
+            className="pagination-btn"
+          >
+            {totalPages}
+          </button>
         </>
       )}
       
       <button 
         onClick={handleNext} 
         disabled={currentPage === totalPages}
+        className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Next
       </button>
       
-      <span>
+      <span className="text-sm text-gray-600 ml-4">
         Showing {startItem}-{endItem} of {totalItems} items
       </span>
     </div>

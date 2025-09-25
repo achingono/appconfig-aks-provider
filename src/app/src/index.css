@@ -1,200 +1,65 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply m-0 bg-gray-50;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 cursor-pointer border-none;
+  }
 
-.app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
+  .page-container {
+    @apply max-w-7xl mx-auto p-6;
+  }
 
-.header {
-  background-color: #2c3e50;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
-}
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow;
+  }
 
-.settings-info {
-  background-color: #ecf0f1;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border-left: 4px solid #3498db;
-}
+  .book-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
 
-.settings-info h3 {
-  margin-top: 0;
-  color: #2c3e50;
-}
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors font-medium;
+  }
 
-.feature-status {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-left: 10px;
-}
+  .btn-secondary {
+    @apply bg-secondary text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-medium;
+  }
 
-.feature-enabled {
-  background-color: #27ae60;
-  color: white;
-}
+  .input-field {
+    @apply border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none;
+  }
 
-.feature-disabled {
-  background-color: #e74c3c;
-  color: white;
-}
+  .select-field {
+    @apply border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none;
+  }
 
-.books-container {
-  display: grid;
-  gap: 20px;
-}
+  .search-controls {
+    @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200;
+  }
 
-.controls {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
+  .error-message {
+    @apply bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md;
+  }
 
-.controls input, .controls select, .controls button {
-  margin: 5px;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.controls button {
-  background-color: #3498db;
-  color: white;
-  cursor: pointer;
-  border: none;
-}
-
-.controls button:hover {
-  background-color: #2980b9;
-}
-
-.book-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.book-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-}
-
-.book-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.book-image {
-  width: 100px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
-.book-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  line-height: 1.3;
-}
-
-.book-authors {
-  color: #7f8c8d;
-  margin-bottom: 10px;
-}
-
-.book-description {
-  font-size: 14px;
-  line-height: 1.4;
-  color: #34495e;
-  margin-bottom: 15px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.book-meta {
-  font-size: 12px;
-  color: #95a5a6;
-  border-top: 1px solid #ecf0f1;
-  padding-top: 10px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 20px 0;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.pagination button {
-  padding: 8px 16px;
-  border: 1px solid #ddd;
-  background-color: white;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination button:not(:disabled):hover {
-  background-color: #3498db;
-  color: white;
-}
-
-.pagination span {
-  color: #2c3e50;
-  font-weight: bold;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #7f8c8d;
-}
-
-.error {
-  background-color: #e74c3c;
-  color: white;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-  text-align: center;
+  .pagination-btn {
+    @apply px-3 py-2 border border-gray-300 rounded-md text-sm font-medium transition-colors hover:bg-gray-50;
+  }
 }

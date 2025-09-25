@@ -18,21 +18,21 @@ const SearchControls = ({
   };
 
   return (
-    <div className="controls">
+    <div className="search-controls mb-6">
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+        <div className="flex flex-wrap gap-3 items-center">
           <input
             type="text"
             placeholder="Search books..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ minWidth: '200px', flex: 1 }}
+            className="input-field flex-1 min-w-[200px]"
           />
           
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ minWidth: '150px' }}
+            className="select-field min-w-[150px]"
           >
             <option value="">All Categories</option>
             {categories.map((category, index) => (
@@ -45,7 +45,7 @@ const SearchControls = ({
           <select
             value={selectedAuthor}
             onChange={(e) => setSelectedAuthor(e.target.value)}
-            style={{ minWidth: '150px' }}
+            className="select-field min-w-[150px]"
           >
             <option value="">All Authors</option>
             {authors.map((author, index) => (
@@ -55,8 +55,8 @@ const SearchControls = ({
             ))}
           </select>
           
-          <button type="submit">Search</button>
-          <button type="button" onClick={onReset}>Reset</button>
+          <button type="submit" className="btn-primary">Search</button>
+          <button type="button" onClick={onReset} className="btn-secondary">Reset</button>
         </div>
       </form>
     </div>

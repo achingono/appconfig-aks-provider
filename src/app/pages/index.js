@@ -21,96 +21,54 @@ const HomePage = ({ initialConfig }) => {
   };
 
   return (
-    <div className="app">
-      <header style={{ 
-        backgroundColor: '#2c3e50', 
-        color: 'white', 
-        padding: '20px',
-        marginBottom: '20px'
-      }}>
-        <div style={{ 
-          maxWidth: '1200px', 
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '20px'
-        }}>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-secondary text-white p-5 mb-5">
+        <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-5">
           <div>
-            <h1 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>
+            <h1 className="text-3xl font-bold mb-2">
               Book Management System
             </h1>
-            <div style={{ fontSize: '14px', opacity: 0.8 }}>
+            <div className="text-sm opacity-80">
               Powered by Server-Side Configuration
             </div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="flex items-center gap-4">
             <button
               onClick={refreshConfiguration}
-              style={{
-                backgroundColor: '#3498db',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
+              className="btn btn-primary text-xs"
             >
               Refresh Config
             </button>
-            <div style={{ 
-              fontSize: '12px',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              padding: '8px 12px',
-              borderRadius: '4px'
-            }}>
+            <div className="text-xs bg-white bg-opacity-10 px-3 py-2 rounded">
               Theme: {appConfig.ui?.theme || 'default'} | 
               PageSize: {appConfig.ui?.pageSize || 10}
             </div>
-            <div style={{ 
-              fontSize: '12px',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              padding: '8px 12px',
-              borderRadius: '4px'
-            }}>
+            <div className="text-xs bg-white bg-opacity-10 px-3 py-2 rounded">
               API: {appConfig.api?.baseUrl || 'Default'}
             </div>
           </div>
         </div>
 
-        <nav style={{ 
-          maxWidth: '1200px', 
-          margin: '20px auto 0',
-          display: 'flex',
-          gap: '10px'
-        }}>
+        <nav className="max-w-7xl mx-auto mt-5 flex gap-2">
           <button
             onClick={() => setCurrentPage('books')}
-            style={{
-              backgroundColor: currentPage === 'books' ? '#3498db' : 'transparent',
-              color: 'white',
-              border: '1px solid #3498db',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            className={`px-5 py-2 rounded border border-primary transition-colors ${
+              currentPage === 'books' 
+                ? 'bg-primary text-white' 
+                : 'bg-transparent text-white hover:bg-primary'
+            }`}
           >
             Books
           </button>
           {appConfig.features?.enableRatings && (
             <button
               onClick={() => setCurrentPage('ratings')}
-              style={{
-                backgroundColor: currentPage === 'ratings' ? '#3498db' : 'transparent',
-                color: 'white',
-                border: '1px solid #3498db',
-                padding: '10px 20px',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              className={`px-5 py-2 rounded border border-primary transition-colors ${
+                currentPage === 'ratings' 
+                  ? 'bg-primary text-white' 
+                  : 'bg-transparent text-white hover:bg-primary'
+              }`}
             >
               Ratings
             </button>
@@ -118,33 +76,27 @@ const HomePage = ({ initialConfig }) => {
         </nav>
       </header>
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+      <main className="max-w-7xl mx-auto px-5">
         {currentPage === 'books' ? (
           <BooksPage appConfig={appConfig} />
         ) : currentPage === 'ratings' ? (
           <RatingsPage appConfig={appConfig} />
         ) : (
-          <div>Page not found</div>
+          <div className="text-center py-10">Page not found</div>
         )}
       </main>
 
-      <footer style={{ 
-        backgroundColor: '#34495e',
-        color: 'white',
-        textAlign: 'center',
-        padding: '20px',
-        marginTop: '40px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ fontSize: '14px', marginBottom: '10px' }}>
+      <footer className="bg-dark text-white text-center p-5 mt-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-sm mb-2">
             Configuration Status: {appConfig.settings ? 'Loaded from mounted settings.json' : 'Using Defaults'}
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.7 }}>
+          <div className="text-xs opacity-70">
             Features: DarkMode {appConfig.features?.enableDarkMode ? '✓' : '✗'} | 
             Ratings {appConfig.features?.enableRatings ? '✓' : '✗'} | 
             Color Scheme: {appConfig.ui?.theme || 'default'}
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '5px' }}>
+          <div className="text-xs opacity-70 mt-1">
             Book Management System • Server-Side Rendered Configuration
           </div>
         </div>
