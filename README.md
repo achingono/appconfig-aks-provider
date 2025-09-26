@@ -326,5 +326,5 @@ When contributing to this project:
 ## License
 
 This project is provided as-is for demonstration purposes. Please refer to the individual component licenses:
-- [Azure App Configuration Emulator](https://learn.microsoft.com/en-us/azure/azure-app-configuration/emulator-overview)
+- [Azure App Configuration Emulator](https://github.com/Azure/AppConfiguration-Emulator)
 - [Azure App Configuration Kubernetes Provider](https://github.com/Azure/AppConfiguration-KubernetesProvider) 
