@@ -274,6 +274,8 @@ volume:
   hostPath:
     path: "${MOUNT_DIR}"
     type: DirectoryOrCreate
+  verification:
+    enabled: true
 app:
   image:
     repository: "${APP_IMAGE_NAME}"
@@ -462,6 +464,8 @@ display_useful_info() {
     echo "      Emulator:      kubectl logs -f deployment/demo-emulator -n $NAMESPACE"
     echo "      User app:      kubectl logs -f deployment/demo-app -n $NAMESPACE"
     echo "      API:           kubectl logs -f deployment/demo-api -n $NAMESPACE"
+    echo "      Verification:  kubectl logs job/${DEPLOYMENT}-volume-verification -n $NAMESPACE"
+    echo "  - To check volume verification: kubectl get job ${DEPLOYMENT}-volume-verification -n $NAMESPACE"
     echo "  - To access the application:"
     
     if [[ "${SKIP_INGRESS:-false}" == "false" ]]; then

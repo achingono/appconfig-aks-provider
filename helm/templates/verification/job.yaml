@@ -1,0 +1,127 @@
+{{- if .Values.volume.verification.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Chart.Name }}-volume-verification
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-volume-verification
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: volume-verifier
+          image: {{ .Values.volume.verification.image.repository }}:{{ .Values.volume.verification.image.tag }}
+          imagePullPolicy: {{ .Values.volume.verification.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - |
+              echo "=== Volume Mount Verification Started ==="
+              echo "Timestamp: $(date)"
+              echo "Mount path: {{ .Values.volume.mountPath }}"
+              echo ""
+              
+              # Check if mount path exists
+              if [ ! -d "{{ .Values.volume.mountPath }}" ]; then
+                echo "❌ ERROR: Mount path {{ .Values.volume.mountPath }} does not exist"
+                exit 1
+              fi
+              echo "✓ Mount path {{ .Values.volume.mountPath }} exists"
+              
+              # List contents of mount path
+              echo ""
+              echo "Contents of {{ .Values.volume.mountPath }}:"
+              ls -la {{ .Values.volume.mountPath }}/
+              
+              # Check for required data files
+              echo ""
+              echo "=== Checking for required data files ==="
+              
+              REQUIRED_FILES="{{ join " " .Values.volume.verification.requiredFiles }}"
+              MISSING_FILES=""
+              
+              for file in $REQUIRED_FILES; do
+                if [ -f "{{ .Values.volume.mountPath }}/$file" ]; then
+                  echo "✓ Found: $file"
+                  # Get file info
+                  ls -lh "{{ .Values.volume.mountPath }}/$file"
+                  # Get line count for CSV files
+                  if echo "$file" | grep -q "\.csv$"; then
+                    lines=$(wc -l < "{{ .Values.volume.mountPath }}/$file" || echo "unknown")
+                    echo "  Lines: $lines"
+                  fi
+                else
+                  echo "❌ Missing: $file"
+                  MISSING_FILES="$MISSING_FILES $file"
+                fi
+                echo ""
+              done
+              
+              # Check if any files are missing
+              if [ ! -z "$MISSING_FILES" ]; then
+                echo "❌ ERROR: Missing required files:$MISSING_FILES"
+                echo ""
+                echo "Available files:"
+                find {{ .Values.volume.mountPath }}/ -name "*.csv" -o -name "*.json" -o -name "*.txt" 2>/dev/null || echo "No files found"
+                exit 1
+              fi
+              
+              # Validate file sizes (should not be empty)
+              echo "=== Validating file sizes ==="
+              for file in $REQUIRED_FILES; do
+                filepath="{{ .Values.volume.mountPath }}/$file"
+                if [ -s "$filepath" ]; then
+                  size=$(stat -f%z "$filepath" 2>/dev/null || stat -c%s "$filepath" 2>/dev/null || echo "unknown")
+                  echo "✓ $file: $size bytes"
+                else
+                  echo "❌ ERROR: $file is empty or cannot be read"
+                  exit 1
+                fi
+              done
+              
+              # Test read permissions
+              echo ""
+              echo "=== Testing read permissions ==="
+              for file in $REQUIRED_FILES; do
+                filepath="{{ .Values.volume.mountPath }}/$file"
+                if head -n 5 "$filepath" >/dev/null 2>&1; then
+                  echo "✓ Can read: $file"
+                else
+                  echo "❌ ERROR: Cannot read $file"
+                  exit 1
+                fi
+              done
+              
+              echo ""
+              echo "🎉 Volume mount verification completed successfully!"
+              echo "All required files are present and accessible."
+              echo "=== Volume Mount Verification Finished ==="
+          
+          volumeMounts:
+            - name: data-volume
+              mountPath: {{ .Values.volume.mountPath }}
+              readOnly: true
+          
+          resources:
+            requests:
+              memory: {{ .Values.volume.verification.resources.requests.memory }}
+              cpu: {{ .Values.volume.verification.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.volume.verification.resources.limits.memory }}
+              cpu: {{ .Values.volume.verification.resources.limits.cpu }}
+      
+      volumes:
+        - name: data-volume
+          hostPath:
+            path: {{ .Values.volume.hostPath.path }}
+            type: {{ .Values.volume.hostPath.type }}
+  
+  backoffLimit: {{ .Values.volume.verification.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.volume.verification.activeDeadlineSeconds }}
+{{- end }}

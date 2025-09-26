@@ -71,6 +71,24 @@ volume:
     path: /mnt/data
     type: DirectoryOrCreate
   mountPath: /app/data
+  verification:
+    enabled: true
+    image:
+      repository: busybox
+      tag: "1.36"
+      pullPolicy: IfNotPresent
+    requiredFiles:
+      - "books_data.csv"
+      - "books_rating.csv"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    backoffLimit: 3
+    activeDeadlineSeconds: 300
 api:
   image:
     repository: api
