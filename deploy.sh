@@ -8,6 +8,7 @@ source "$SCRIPT_DIR/scripts/functions.sh"
 SKIP_PROVIDER=false
 SKIP_INGRESS=false
 SKIP_EMULATOR=false
+SKIP_BUILD=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -23,6 +24,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_EMULATOR=true
             shift
             ;;
+        --skip-build)
+            SKIP_BUILD=true
+            shift
+            ;;
         --help|-h)
             show_usage
             exit 0
@@ -34,6 +39,9 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Ensure prerequisites are met
+check_prerequisites
 
 echo "Setting up deployment variables..."
 
@@ -60,6 +68,9 @@ fi
 
 # Domain and hostname variables
 LOCAL_DOMAIN="${LOCAL_DOMAIN:-demo.local}"
+IMAGE_TAG="${IMAGE_TAG:-$(date +%s%N | md5sum | cut -c1-6)}"
+APP_IMAGE_NAME="${APP_IMAGE_NAME:-${DEPLOYMENT}/app}"
+API_IMAGE_NAME="${API_IMAGE_NAME:-${DEPLOYMENT}/api}"
 
 # ensure minikube is running
 ensure_minikube_running
@@ -82,6 +93,16 @@ if [[ "$SKIP_INGRESS" == false ]]; then
     enable_minikube_ingress
 else
     echo "Skipping minikube ingress addon enablement as per user request."
+fi
+
+if [[ "$SKIP_BUILD" == false ]]; then
+    # Build Docker images
+    build_docker_images
+
+    # Load images into minikube
+    load_images_to_minikube
+else
+    echo "Skipping Docker image build and load as requested."
 fi
 
 # Create minikube-specific overrides

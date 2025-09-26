@@ -1,5 +1,55 @@
 #!/bin/bash
 
+# Function to show usage information
+show_usage() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Deploy the application to minikube with optional configurations."
+    echo ""
+    echo "Options:"
+    echo "  --skip-provider    Skip Azure App Configuration provider installation"
+    echo "  --skip-ingress     Skip minikube ingress addon enablement"
+    echo "  --skip-emulator    Skip Azure App Configuration emulator deployment"
+    echo "  --skip-build       Skip Docker image build and load"
+    echo "  --help, -h         Show this help message"
+    echo ""
+    echo "The script will automatically:"
+    echo "  - Download the Kaggle amazon-books-reviews dataset if not present"
+    echo "  - Extract the dataset to the data folder"
+    echo "  - Mount the data folder into the minikube cluster"
+    echo "  - Deploy the API with access to the mounted data"
+    echo ""
+    echo "Environment variables:"
+    echo "  DEPLOYMENT         Deployment name (default: poc)"
+    echo "  NAMESPACE          Kubernetes namespace (default: demo)"
+    echo "  LOCAL_DOMAIN       Local domain for ingress (default: demo.local)"
+    echo "  IMAGE_TAG          Docker image tag (default: auto-generated)"
+    echo ""
+}
+
+# Function to check prerequisites
+check_prerequisites() {
+    if ! command -v docker &> /dev/null; then
+        echo "Error: docker is not installed or not in PATH"
+        exit 1
+    fi
+
+    if ! command -v minikube &> /dev/null; then
+        echo "Error: minikube is not installed or not in PATH"
+        exit 1
+    fi
+
+    if ! command -v helm &> /dev/null; then
+        echo "Error: helm is not installed or not in PATH"
+        exit 1
+    fi
+
+    if ! command -v kubectl &> /dev/null; then
+        echo "Error: kubectl is not installed or not in PATH"
+        exit 1
+    fi
+}
+
 # Function to ensure minikube is running
 ensure_minikube_running() {
     if ! minikube status &> /dev/null; then
@@ -201,9 +251,37 @@ certificates:
     crt: "$crt"
     key: "$key"
     conf: "$conf"
+app:image:
+  repository: "${APP_IMAGE_NAME}"
+  tag: "${IMAGE_TAG}"
+api:image:
+  repository: "${API_IMAGE_NAME}"
+  tag: "${IMAGE_TAG}"
 EOF
 
     echo "✓ Created overrides.yaml with environment-specific overrides"
+}
+
+# Function to build Docker images
+build_docker_images() {
+    echo "Building Docker images..."
+
+    echo "  Building $APP_IMAGE_NAME:$IMAGE_TAG ..."
+    docker build -t $APP_IMAGE_NAME:$IMAGE_TAG ./src/app
+
+    echo "  Building $API_IMAGE_NAME:$IMAGE_TAG ..."
+    docker build -t $API_IMAGE_NAME:$IMAGE_TAG ./src/api
+
+    echo "Docker images built successfully!"
+}
+
+# Function to load images into minikube
+load_images_to_minikube() {
+    echo "Loading Docker images into minikube..."
+    minikube image load $APP_IMAGE_NAME:$IMAGE_TAG 
+    minikube image load $API_IMAGE_NAME:$IMAGE_TAG 
+
+    echo "Images loaded into minikube successfully!"
 }
 
 # Function to deploy with Helm
