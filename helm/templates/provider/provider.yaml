@@ -15,7 +15,9 @@ spec:
     selectors:
 {{- range .Values.provider.selectors }}
       - keyFilter: {{ .keyFilter | default "*" | quote }}
-        labelFilter: {{ .labelFilter | default "*" | quote }}
+{{- if .labelFilter }}
+        labelFilter: {{ .labelFilter | quote }}
+{{- end }}
 {{- end }}
     refresh:
       enabled: true
@@ -24,7 +26,9 @@ spec:
     selectors:
 {{- range .Values.provider.selectors }}
       - keyFilter: {{ .keyFilter | default "*" | quote }}
-        labelFilter: {{ .labelFilter | default "*" | quote }}
+{{- if .labelFilter }}
+        labelFilter: {{ .labelFilter | quote }}
+{{- end }}
 {{- end }}
     refresh:
       enabled: true

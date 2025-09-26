@@ -19,29 +19,23 @@ spec:
         - name: {{ .Chart.Name }}-api
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.api.port | default 8080 }}
           env:
-            - name: PYTHON_ENV
-              value: "development"
-            - name: DEBUG
-              value: "1"
-            - name: PORT
-              value: "8080"
+{{- range .Values.api.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+{{- end }}
             - name: CONFIG_PATH
-              value: "/app/settings.json"
-            - name: BOOKS_DATA_PATH
-              value: "/app/data/books_data.csv"
-            - name: BOOKS_RATING_PATH
-              value: "/app/data/books_rating.csv"
+              value: {{ .Values.api.configPath | default "/app/settings.json" | quote }}
             - name: CORS_ORIGINS
               value: "https://{{ .Values.app.host }}.{{ .Values.ingress.domain }}"
           volumeMounts:
             - name: config-volume
-              mountPath: /app/settings.json
-              subPath: settings.json
+              mountPath: {{ .Values.api.configPath | default "/app/settings.json" }}
+              subPath: {{ .Values.configMap.data.key | default "settings.json" }}
               readOnly: true
             - name: data-volume
-              mountPath: /app/data
+              mountPath: {{ .Values.volume.mountPath | default "/app/data" }}
               readOnly: true
           resources:
             requests:
@@ -56,5 +50,5 @@ spec:
           name: {{ .Values.configMap.name }}
       - name: data-volume
         hostPath:
-          path: /mnt/data # Path in the Minikube VM
-          type: DirectoryOrCreate # Optional: ensures the directory exists
+          path: {{ .Values.volume.hostPath.path | default "/mnt/data" }}
+          type: {{ .Values.volume.hostPath.type | default "DirectoryOrCreate" }}

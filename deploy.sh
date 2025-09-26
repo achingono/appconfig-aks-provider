@@ -76,6 +76,8 @@ LOCAL_DOMAIN="${LOCAL_DOMAIN:-demo.local}"
 IMAGE_TAG="${IMAGE_TAG:-$(date +%s%N | md5sum | cut -c1-6)}"
 APP_IMAGE_NAME="${APP_IMAGE_NAME:-${DEPLOYMENT}/app}"
 API_IMAGE_NAME="${API_IMAGE_NAME:-${DEPLOYMENT}/api}"
+DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/data}"
+MOUNT_DIR="${MOUNT_DIR:-/mnt/data}"
 
 # ensure minikube is running
 ensure_minikube_running
@@ -111,11 +113,10 @@ else
 fi
 
 if [[ "$SKIP_DATA" == false ]]; then
-    local data_dir="${SCRIPT_DIR}/data"
-    local zip_file="${data_dir}/amazon-books-reviews.zip"
+    ZIP_FILE="${DATA_DIR}/amazon-books-reviews.zip"
     # Check if data files exist, if not download dataset
-    if [[ ! -f "${data_dir}/books_data.csv" || ! -f "${data_dir}/books_rating.csv" ]]; then
-        if [[ ! -f "${zip_file}" ]]; then
+    if [[ ! -f "${DATA_DIR}/books_data.csv" || ! -f "${DATA_DIR}/books_rating.csv" ]]; then
+        if [[ ! -f "${ZIP_FILE}" ]]; then
             echo "Required data files are missing. Downloading dataset..."
             download_kaggle_dataset
         fi
@@ -125,7 +126,7 @@ if [[ "$SKIP_DATA" == false ]]; then
         echo "Required data files are already present."
     fi
     # Mount data to minikube
-    mount_data_to_minikube
+    # mount_data_to_minikube
 else
     echo "Skipping data setup as requested."
 fi

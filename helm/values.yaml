@@ -41,7 +41,6 @@ provider:
   refreshInterval: "30s"
   selectors:
     - keyFilter: "*"
-      labelFilter: "*"
 emulator:
   enabled: true
   image:
@@ -67,12 +66,28 @@ configMap:
     key: settings.json
     type: json
     separator: __  
+volume:
+  hostPath:
+    path: /mnt/data
+    type: DirectoryOrCreate
+  mountPath: /app/data
 api:
   image:
     repository: api
     tag: latest
     pullPolicy: IfNotPresent
   host: "api"
+  port: 8080
+  env:
+    - name: PYTHON_ENV
+      value: "development"
+    - name: DEBUG
+      value: "1"
+    - name: BOOKS_DATA_PATH
+      value: "/app/data/books_data.csv"
+    - name: BOOKS_RATING_PATH
+      value: "/app/data/books_rating.csv"
+  configPath: "/app/settings.json"
   resources:
     limits:
       memory: "512Mi"
@@ -86,6 +101,11 @@ app:
     tag: latest
     pullPolicy: IfNotPresent
   host: "app"
+  port: 8080
+  env:
+    - name: NODE_ENV
+      value: "development"
+  configPath: "/app/settings.json"
   resources:
     limits:
       memory: "512Mi"

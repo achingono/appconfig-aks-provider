@@ -67,8 +67,13 @@ check_prerequisites() {
 # Function to ensure minikube is running
 ensure_minikube_running() {
     if ! minikube status &> /dev/null; then
-        echo "Minikube is not running. Starting with 'minikube start'"
-        minikube start
+        if [[ "$SKIP_DATA" == false ]]; then
+            echo "Minikube is not running. Starting with 'minikube start --driver=docker --mount --mount-string=${DATA_DIR}:${MOUNT_DIR}'"
+            minikube start --driver=docker --mount --mount-string="${DATA_DIR}:${MOUNT_DIR}"
+        else
+            echo "Minikube is not running. Starting with 'minikube start --driver=docker '"
+            minikube start --driver=docker 
+        fi
     fi
 }
 
@@ -162,7 +167,7 @@ install_appconfig_provider() {
 # Function to enable minikube ingress
 enable_minikube_ingress() {
     echo "Attempting to enable minikube ingress addon..."
-    if timeout 30s minikube addons enable ingress; then
+    if timeout 40s minikube addons enable ingress; then
         echo "✓ Ingress addon enabled successfully"
         
         # Configure NGINX controller for proper forwarded headers handling
@@ -265,12 +270,18 @@ certificates:
     crt: "$crt"
     key: "$key"
     conf: "$conf"
-app:image:
-  repository: "${APP_IMAGE_NAME}"
-  tag: "${IMAGE_TAG}"
-api:image:
-  repository: "${API_IMAGE_NAME}"
-  tag: "${IMAGE_TAG}"
+volume:
+  hostPath:
+    path: "${MOUNT_DIR}"
+    type: DirectoryOrCreate
+app:
+  image:
+    repository: "${APP_IMAGE_NAME}"
+    tag: "${IMAGE_TAG}"
+api:
+  image:
+    repository: "${API_IMAGE_NAME}"
+    tag: "${IMAGE_TAG}"
 EOF
 
     echo "✓ Created overrides.yaml with environment-specific overrides"
@@ -340,18 +351,16 @@ deploy_with_helm() {
 
 # Function to download Kaggle dataset if not exists
 download_kaggle_dataset() {
-    local data_dir="${SCRIPT_DIR}/data"
-    local zip_file="${data_dir}/amazon-books-reviews.zip"
     local kaggle_url="https://www.kaggle.com/api/v1/datasets/download/mohamedbakhet/amazon-books-reviews"
     
     echo "Checking for Kaggle dataset..."
     
     # Create data directory if it doesn't exist
-    mkdir -p "$data_dir"
-    
+    mkdir -p "$DATA_DIR"
+
     # Check if zip file already exists
-    if [[ -f "$zip_file" ]]; then
-        echo "✓ Kaggle dataset already exists at $zip_file"
+    if [[ -f "$ZIP_FILE" ]]; then
+        echo "✓ Kaggle dataset already exists at $ZIP_FILE"
         return 0
     fi
     
@@ -359,20 +368,20 @@ download_kaggle_dataset() {
     
     # Check if wget or curl is available
     if command -v wget &> /dev/null; then
-        wget -O "$zip_file" "$kaggle_url"
+        wget -O "$ZIP_FILE" "$kaggle_url"
     elif command -v curl &> /dev/null; then
-        curl -L -o "$zip_file" "$kaggle_url"
+        curl -L -o "$ZIP_FILE" "$kaggle_url"
     else
         echo "Error: Neither wget nor curl is available for downloading the dataset"
         echo "Please install wget or curl, or manually download the file from:"
         echo "$kaggle_url"
-        echo "and save it as: $zip_file"
+        echo "and save it as: $ZIP_FILE"
         exit 1
     fi
     
     # Verify the download
-    if [[ -f "$zip_file" && -s "$zip_file" ]]; then
-        echo "✓ Successfully downloaded Kaggle dataset to $zip_file"
+    if [[ -f "$ZIP_FILE" && -s "$ZIP_FILE" ]]; then
+        echo "✓ Successfully downloaded Kaggle dataset to $ZIP_FILE"
     else
         echo "❌ Failed to download Kaggle dataset"
         exit 1
@@ -380,15 +389,12 @@ download_kaggle_dataset() {
 }
 
 # Function to extract Kaggle dataset
-extract_kaggle_dataset() {
-    local data_dir="${SCRIPT_DIR}/data"
-    local zip_file="${data_dir}/amazon-books-reviews.zip"
-    
+extract_kaggle_dataset() {  
     echo "Extracting Kaggle dataset..."
     
     # Check if zip file exists
-    if [[ ! -f "$zip_file" ]]; then
-        echo "Error: Zip file not found at $zip_file"
+    if [[ ! -f "$ZIP_FILE" ]]; then
+        echo "Error: Zip file not found at $ZIP_FILE"
         exit 1
     fi
     
@@ -400,24 +406,23 @@ extract_kaggle_dataset() {
     fi
     
     # Extract the zip file
-    echo "Extracting $zip_file to $data_dir..."
-    unzip -o "$zip_file" -d "$data_dir"
-    
+    echo "Extracting $ZIP_FILE to $DATA_DIR..."
+    unzip -o "$ZIP_FILE" -d "$DATA_DIR"
+
     # List extracted files
     echo "✓ Dataset extracted successfully. Contents:"
-    ls -la "$data_dir"
+    ls -la "$DATA_DIR"
 }
 
 # Function to mount data folder to minikube
 mount_data_to_minikube() {
-    local data_dir="${SCRIPT_DIR}/data"
     local mount_path="/mnt/data"
     
     echo "Setting up data volume for minikube..."
     
     # Check if data directory exists
-    if [[ ! -d "$data_dir" ]]; then
-        echo "Error: Data directory not found at $data_dir"
+    if [[ ! -d "$DATA_DIR" ]]; then
+        echo "Error: Data directory not found at $DATA_DIR"
         exit 1
     fi
     
@@ -434,7 +439,7 @@ mount_data_to_minikube() {
     minikube ssh "sudo mkdir -p $mount_path" || true
     
     # Copy files to minikube
-    for file in "$data_dir"/*; do
+    for file in "$DATA_DIR"/*.csv; do
         if [[ -f "$file" ]]; then
             filename=$(basename "$file")
             echo "  Copying $filename to minikube..."
