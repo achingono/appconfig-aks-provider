@@ -445,6 +445,38 @@ mount_data_to_minikube() {
     echo "✓ Data files mounted to minikube at $mount_path"
 }
 
+# Function to display useful commands
+display_useful_info() {
+    echo ""
+    echo "Deployment completed successfully!"
+    echo ""
+    echo "Useful commands:"
+    echo "  - To check pod status: kubectl get pods -n $NAMESPACE"
+    echo "  - To view pod logs: "
+    echo "      Config provider: kubectl logs -f deployment/az-appconfig-k8s-provider -n azappconfig-system"
+    echo "      Emulator:      kubectl logs -f deployment/demo-emulator -n $NAMESPACE"
+    echo "      User app:      kubectl logs -f deployment/demo-app -n $NAMESPACE"
+    echo "      API:           kubectl logs -f deployment/demo-api -n $NAMESPACE"
+    echo "  - To access the application:"
+    
+    if [[ "${SKIP_INGRESS:-false}" == "false" ]]; then
+        echo "    Run: minikube tunnel (in a separate terminal) to access via LoadBalancer services"
+        echo "      https://config.${LOCAL_DOMAIN}"
+        echo "      https://api.${LOCAL_DOMAIN}/swagger"
+        echo "      https://app.${LOCAL_DOMAIN}"
+        echo ""
+        echo "    Make sure to add the following entry to your /etc/hosts file if not already present:"
+        echo "      ${INGRESS_IP}  *.${LOCAL_DOMAIN} ${LOCAL_DOMAIN}"
+        echo ""
+    else
+        echo "    Access the services via NodePort:"
+        echo "      App: http://${INGRESS_IP}:$(kubectl get svc app -n $NAMESPACE -o jsonpath='{.spec.ports[0].nodePort}')"
+        echo "      API: http://${INGRESS_IP}:$(kubectl get svc api -n $NAMESPACE -o jsonpath='{.spec.ports[0].nodePort}')/swagger"
+        echo "      Config: http://${INGRESS_IP}:$(kubectl get svc config -n $NAMESPACE -o jsonpath='{.spec.ports[0].nodePort}')"
+        echo ""    
+    fi
+}
+
 # Function to clean up temporary files
 cleanup_temp_files() {
     rm -f overrides.yaml

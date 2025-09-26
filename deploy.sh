@@ -136,5 +136,8 @@ create_minikube_overrides
 # Deploy with Helm
 deploy_with_helm
 
+# Show useful information
+display_useful_info
+
 # clean up
 cleanup_temp_files
