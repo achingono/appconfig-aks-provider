@@ -11,6 +11,7 @@ show_usage() {
     echo "  --skip-ingress     Skip minikube ingress addon enablement"
     echo "  --skip-emulator    Skip Azure App Configuration emulator deployment"
     echo "  --skip-build       Skip Docker image build and load"
+    echo "  --skip-data       Skip data setup (download, extract, mount)"
     echo "  --help, -h         Show this help message"
     echo ""
     echo "The script will automatically:"
@@ -46,6 +47,19 @@ check_prerequisites() {
 
     if ! command -v kubectl &> /dev/null; then
         echo "Error: kubectl is not installed or not in PATH"
+        exit 1
+    fi
+
+    # Check for download tools (at least one should be available)
+    if ! command -v wget &> /dev/null && ! command -v curl &> /dev/null; then
+        echo "Error: Neither wget nor curl is available for downloading datasets"
+        echo "Please install wget or curl"
+        exit 1
+    fi
+
+    if ! command -v unzip &> /dev/null; then
+        echo "Error: unzip is not installed or not in PATH"
+        echo "Please install unzip to extract dataset files"
         exit 1
     fi
 }
@@ -322,6 +336,113 @@ deploy_with_helm() {
         echo ""
         exit 1
     fi
+}
+
+# Function to download Kaggle dataset if not exists
+download_kaggle_dataset() {
+    local data_dir="${SCRIPT_DIR}/data"
+    local zip_file="${data_dir}/amazon-books-reviews.zip"
+    local kaggle_url="https://www.kaggle.com/api/v1/datasets/download/mohamedbakhet/amazon-books-reviews"
+    
+    echo "Checking for Kaggle dataset..."
+    
+    # Create data directory if it doesn't exist
+    mkdir -p "$data_dir"
+    
+    # Check if zip file already exists
+    if [[ -f "$zip_file" ]]; then
+        echo "✓ Kaggle dataset already exists at $zip_file"
+        return 0
+    fi
+    
+    echo "Downloading Kaggle dataset from $kaggle_url..."
+    
+    # Check if wget or curl is available
+    if command -v wget &> /dev/null; then
+        wget -O "$zip_file" "$kaggle_url"
+    elif command -v curl &> /dev/null; then
+        curl -L -o "$zip_file" "$kaggle_url"
+    else
+        echo "Error: Neither wget nor curl is available for downloading the dataset"
+        echo "Please install wget or curl, or manually download the file from:"
+        echo "$kaggle_url"
+        echo "and save it as: $zip_file"
+        exit 1
+    fi
+    
+    # Verify the download
+    if [[ -f "$zip_file" && -s "$zip_file" ]]; then
+        echo "✓ Successfully downloaded Kaggle dataset to $zip_file"
+    else
+        echo "❌ Failed to download Kaggle dataset"
+        exit 1
+    fi
+}
+
+# Function to extract Kaggle dataset
+extract_kaggle_dataset() {
+    local data_dir="${SCRIPT_DIR}/data"
+    local zip_file="${data_dir}/amazon-books-reviews.zip"
+    
+    echo "Extracting Kaggle dataset..."
+    
+    # Check if zip file exists
+    if [[ ! -f "$zip_file" ]]; then
+        echo "Error: Zip file not found at $zip_file"
+        exit 1
+    fi
+    
+    # Check if unzip is available
+    if ! command -v unzip &> /dev/null; then
+        echo "Error: unzip is not installed or not in PATH"
+        echo "Please install unzip to extract the dataset"
+        exit 1
+    fi
+    
+    # Extract the zip file
+    echo "Extracting $zip_file to $data_dir..."
+    unzip -o "$zip_file" -d "$data_dir"
+    
+    # List extracted files
+    echo "✓ Dataset extracted successfully. Contents:"
+    ls -la "$data_dir"
+}
+
+# Function to mount data folder to minikube
+mount_data_to_minikube() {
+    local data_dir="${SCRIPT_DIR}/data"
+    local mount_path="/mnt/data"
+    
+    echo "Setting up data volume for minikube..."
+    
+    # Check if data directory exists
+    if [[ ! -d "$data_dir" ]]; then
+        echo "Error: Data directory not found at $data_dir"
+        exit 1
+    fi
+    
+    # Check if minikube is running
+    if ! minikube status &> /dev/null; then
+        echo "Error: Minikube is not running"
+        exit 1
+    fi
+    
+    # Copy data to minikube node (this approach works for all minikube drivers)
+    echo "Copying data to minikube node..."
+    
+    # Create the mount directory in minikube
+    minikube ssh "sudo mkdir -p $mount_path" || true
+    
+    # Copy files to minikube
+    for file in "$data_dir"/*; do
+        if [[ -f "$file" ]]; then
+            filename=$(basename "$file")
+            echo "  Copying $filename to minikube..."
+            cat "$file" | minikube ssh "sudo tee $mount_path/$filename > /dev/null"
+        fi
+    done
+    
+    echo "✓ Data files mounted to minikube at $mount_path"
 }
 
 # Function to clean up temporary files

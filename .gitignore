@@ -1,3 +1,8 @@
 tls.crt
 tls.key
 node_modules/
+
+# Kaggle dataset files
+data/*.zip
+data/*.csv
+data/*.json

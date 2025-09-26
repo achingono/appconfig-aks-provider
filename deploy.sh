@@ -9,6 +9,7 @@ SKIP_PROVIDER=false
 SKIP_INGRESS=false
 SKIP_EMULATOR=false
 SKIP_BUILD=false
+SKIP_DATA=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-build)
             SKIP_BUILD=true
+            shift
+            ;;
+        --skip-data)
+            SKIP_DATA=true
             shift
             ;;
         --help|-h)
@@ -103,6 +108,26 @@ if [[ "$SKIP_BUILD" == false ]]; then
     load_images_to_minikube
 else
     echo "Skipping Docker image build and load as requested."
+fi
+
+if [[ "$SKIP_DATA" == false ]]; then
+    local data_dir="${SCRIPT_DIR}/data"
+    local zip_file="${data_dir}/amazon-books-reviews.zip"
+    # Check if data files exist, if not download dataset
+    if [[ ! -f "${data_dir}/books_data.csv" || ! -f "${data_dir}/books_rating.csv" ]]; then
+        if [[ ! -f "${zip_file}" ]]; then
+            echo "Required data files are missing. Downloading dataset..."
+            download_kaggle_dataset
+        fi
+        echo "Extracting dataset..."
+        extract_kaggle_dataset
+    else
+        echo "Required data files are already present."
+    fi
+    # Mount data to minikube
+    mount_data_to_minikube
+else
+    echo "Skipping data setup as requested."
 fi
 
 # Create minikube-specific overrides

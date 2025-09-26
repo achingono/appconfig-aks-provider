@@ -19,7 +19,7 @@ services:
       - CORS_ORIGINS=http://localhost:5000,http://127.0.0.1:5000
     volumes:
       - ./src/cfg/settings.json:/app/settings.json:ro
-      - ./src/api/data:/app/data:ro
+      - ./data:/app/data:ro
 
   app:
     build:
